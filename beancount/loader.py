@@ -55,6 +55,30 @@ PICKLE_CACHE_FILENAME = '.{filename}.picklecache'
 # seconds.
 PICKLE_CACHE_THRESHOLD = 1.0
 
+def load_kafka(topic, consumer_config=None, log_errors=None, extra_validations=None):
+    """Open a Beancount input file, parse it, run transformations and validate.
+
+    Args:
+      topic: The name of the Kafka topic to be consumed.
+      consumer_config: A dictionary object to load into the KafkaConsumer.
+      log_errors: A file object or function to write errors to,
+        or None, if it should remain quiet.
+      extra_validations: A list of extra validation functions to run after loading
+        this list of entries.
+    Returns:
+      A triple of (entries, errors, option_map) where "entries" is a date-sorted
+      list of entries from the file, "errors" a list of error objects generated
+      while parsing and validating the file, and "options_map", a dict of the
+      options parsed from the file.
+    """
+    if consumer_config is None:
+        consumer_config = dict()
+    conf_bootstrap_servers = 'bootstrap.servers'
+    bootstrap_servers = consumer_config.get(conf_bootstrap_servers)
+    if bootstrap_servers is None:
+        raise('Consumer config must contain "{}"'.format(conf_bootstrap_servers))
+    
+    pass
 
 def load_file(filename, log_timings=None, log_errors=None, extra_validations=None,
               encoding=None):
