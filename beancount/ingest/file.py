@@ -19,7 +19,6 @@ import re
 from beancount.core import account
 from beancount.utils import misc_utils
 from beancount.ingest import identify
-from beancount.ingest import scripts_utils
 from beancount.ingest import cache
 
 
@@ -302,7 +301,3 @@ def run(args, parser, importers_list, files_or_directories, hooks=None):
          idify=True,
          logfile=sys.stdout)
     return 0
-
-
-def main():
-    return scripts_utils.trampoline_to_ingest(sys.modules[__name__])

@@ -113,7 +113,7 @@ import functools
 import inspect
 import textwrap
 import io
-from os import path
+import sys
 
 from beancount.parser import _parser
 from beancount.parser import grammar
@@ -134,7 +134,7 @@ ParserError, ParserSyntaxError, DeprecatedError
 
 # When importing the module, always check that the compiled source matched the
 # installed source.
-hashsrc.check_parser_source_files()
+hashsrc.check_parser_source_files(_parser)
 
 
 def is_posting_incomplete(posting):
@@ -179,12 +179,12 @@ def is_entry_incomplete(entry):
     return False
 
 
-def parse_file(filename, **kw):
+def parse_file(file, report_filename=None, report_firstline=0, **kw):
     """Parse a beancount input file and return Ledger with the list of
     transactions and tree of accounts.
 
     Args:
-      filename: the name of the file to be parsed.
+      file: file object or path to the file to be parsed.
       kw: a dict of keywords to be applied to the C parser.
     Returns:
       A tuple of (
@@ -192,9 +192,16 @@ def parse_file(filename, **kw):
         list of errors that were encountered during parsing, and
         a dict of the option values that were parsed from the file.)
     """
-    abs_filename = path.abspath(filename) if filename else None
-    builder = grammar.Builder(abs_filename)
-    _parser.parse_file(filename, builder, **kw)
+    if file == '-':
+        file = sys.stdin.buffer
+    # It would be more appropriate here to check for io.RawIOBase but
+    # that does not work for io.BytesIO despite it implementing the
+    # readinto() method.
+    elif not isinstance(file, io.IOBase):
+        file = open(file, 'rb')
+    builder = grammar.Builder()
+    parser = _parser.Parser(builder)
+    parser.parse(file, filename=report_filename, lineno=report_firstline, **kw)
     return builder.finalize()
 
 
@@ -214,9 +221,12 @@ def parse_string(string, report_filename=None, **kw):
     """
     if kw.pop('dedent', None):
         string = textwrap.dedent(string)
-    builder = grammar.Builder(report_filename or '<string>')
-    _parser.parse_string(string, builder, report_filename=report_filename, **kw)
-    return builder.finalize()
+    if isinstance(string, str):
+        string = string.encode('utf8')
+    if report_filename is None:
+        report_filename = '<string>'
+    file = io.BytesIO(string)
+    return parse_file(file, report_filename=report_filename, **kw)
 
 
 def parse_doc(expect_errors=False, allow_incomplete=False):

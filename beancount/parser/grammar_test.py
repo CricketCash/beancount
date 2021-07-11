@@ -18,6 +18,7 @@ from beancount.core.number import MISSING
 from beancount.core.amount import from_string as A
 from beancount.core.amount import Amount
 from beancount.core.position import CostSpec
+from beancount.parser import grammar
 from beancount.parser import parser
 from beancount.parser import lexer
 from beancount.core import data
@@ -293,7 +294,7 @@ class TestUglyBugs(unittest.TestCase):
             ';; End of file',
         ])
 
-        entries, errors, _ = parser.parse_string(input_, yydebug=0)
+        entries, errors, _ = parser.parse_string(input_)
         check_list(self, entries, [data.Transaction])
         check_list(self, errors, [])
 
@@ -482,7 +483,7 @@ class TestPushPopMeta(unittest.TestCase):
         """
         self.assertEqual(1, len(errors))
         self.assertRegex(errors[0].message,
-                                 "Attempting to pop absent metadata key")
+                         "Attempting to pop absent metadata key")
 
     @parser.parse_doc(expect_errors=True)
     def test_pushmeta_forgotten(self, entries, errors, _):
@@ -491,7 +492,7 @@ class TestPushPopMeta(unittest.TestCase):
         """
         self.assertEqual(1, len(errors))
         self.assertRegex(errors[0].message,
-                                 "Unbalanced metadata key")
+                         "Unbalanced metadata key")
 
 
 class TestMultipleLines(unittest.TestCase):
@@ -1871,7 +1872,7 @@ class TestLexerAndParserErrors(cmptest.TestCase):
             self.assertEqual(1, len(entries))
             self.assertEqual(1, len(errors))
             self.assertRegex(errors[0].message,
-                                     '(Invalid token|unexpected RPAREN)')
+                             '(Invalid token|unexpected RPAREN)')
 
     @parser.parse_doc(expect_errors=True)
     def test_grammar_syntax_error(self, entries, errors, _):
@@ -2537,6 +2538,21 @@ class TestDocument(unittest.TestCase):
         """
         check_list(self, entries, [data.Document])
         self.assertEqual({'something'}, entries[0].links)
+
+
+class TestMethodsSignature(unittest.TestCase):
+
+    def test_signatures(self):
+        # Enforce that all "public" methods of the Builder class have
+        # 'filename' and 'lineno' as the first two arguments.
+        for name, func in inspect.getmembers(grammar.Builder, inspect.isfunction):
+            if (name.isupper() or
+                name.startswith('_') or
+                name.startswith('get_') or
+                name == 'finalize'):
+                continue
+            parameters = inspect.signature(func).parameters.keys()
+            self.assertEqual(list(parameters)[:3], ['self', 'filename', 'lineno'])
 
 
 if __name__ == '__main__':

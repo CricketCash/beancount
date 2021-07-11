@@ -1,16 +1,16 @@
 #!/usr/bin/env make
 
-# Just my big old fat ledger file.
 INPUT = $(HOME)/q/office/accounting/blais.beancount
 DOWNLOADS = $(HOME)/u/Downloads
-
-GREP="grep --include="*.py" -srnE"
 TOOLS=./tools
 
-PYTHON?=python3
+PYTHON ?= python3
+LEX = flex
+YACC = bison
+YFLAGS = --report=itemset --verbose -Wall -Werror
+
 
 all: build
-
 
 # Clean everything up.
 clean:
@@ -25,35 +25,9 @@ clean:
 # Targets to generate and compile the C parser.
 CROOT = beancount/parser
 
-# See
-# https://www.owlfolio.org/possibly-useful/flex-input-scanner-rules-are-too-complicated/
-#LEX = flex -Ca
-LEX = flex
-
-# Note: -Wno-deprecated silences warnings about old directives from upgrading to 3.4.
-YACC = bison -Wno-deprecated --report=itemset --verbose
-FILTERYACC = sed -e 's@/\*[ \t]yacc\.c:.*\*/@@'
-TMP=/tmp
-
 $(CROOT)/grammar.c $(CROOT)/grammar.h: $(CROOT)/grammar.y
-	$(YACC) -o $(CROOT)/grammar.c $<
-	(cat $(CROOT)/grammar.c | $(FILTERYACC) > $(TMP)/grammar.c ; mv $(TMP)/grammar.c $(CROOT)/grammar.c )
-	(cat $(CROOT)/grammar.h | $(FILTERYACC) > $(TMP)/grammar.h ; mv $(TMP)/grammar.h $(CROOT)/grammar.h )
+	$(YACC) $(YFLAGS) -o $(CROOT)/grammar.c $<
 
-UNICODE_CATEGORY_RANGES_GENERATOR=$(TOOLS)/generate_unicode_category_regexps.py
-UNICODE_CATEGORY_DIR = $(CROOT)/lexer
-UNICODE_CATEGORIES = Lu Ll Lt Lo Nd Nl No
-UNICODE_CATEGORY_SOURCES = $(patsubst %, $(UNICODE_CATEGORY_DIR)/%.l, $(UNICODE_CATEGORIES))
-$(UNICODE_CATEGORY_SOURCES): $(UNICODE_CATEGORY_DIR)/%.l :
-	$(PYTHON) $(UNICODE_CATEGORY_RANGES_GENERATOR) \
-		--format=lex --name=UTF-8-$* --categories=$* >$@
-
-# Note that flex parses the files in the given order.
-#LEXER_SOURCES = $(UNICODE_CATEGORY_SOURCES) $(CROOT)/lexer.l
-#$(CROOT)/lexer.c $(CROOT)/lexer.h: $(LEXER_SOURCES) $(CROOT)/grammar.h
-#	$(LEX) --outfile=$(CROOT)/lexer.c --header-file=$(CROOT)/lexer.h $(LEXER_SOURCES)
-#	patch -p1 < $(CROOT)/lexer.patch
-FLEX_VERSION=$(shell $(LEX) -V)
 $(CROOT)/lexer.c $(CROOT)/lexer.h: $(CROOT)/lexer.l $(CROOT)/grammar.h
 	$(LEX) --outfile=$(CROOT)/lexer.c --header-file=$(CROOT)/lexer.h $<
 
@@ -174,14 +148,10 @@ demo:
 	bin/bean-web --debug examples/demo.beancount
 
 
-# Generate the tutorial files from the example file.
+# Generate the example file.
 EXAMPLE=examples/example.beancount
 example $(EXAMPLE):
 	./bin/bean-example --seed=0 -o $(EXAMPLE)
-
-TUTORIAL=examples/tutorial
-tutorial: $(EXAMPLE)
-	$(PYTHON) beancount/scripts/tutorial.py $(EXAMPLE) $(TUTORIAL)
 
 
 # Run the web server.
@@ -238,11 +208,11 @@ LINT_SRCS =					\
 PYLINT = python3 -m pylint
 
 pylint lint:
-	ENABLE_AUTOIMPORTS= $(PYLINT) --rcfile=$(PWD)/etc/pylintrc $(LINT_SRCS)
+	$(PYLINT) $(LINT_SRCS)
 
 LINT_TESTS=useless-suppression,empty-docstring
 pylint-only:
-	$(PYLINT) --rcfile=$(PWD)/etc/pylintrc --disable=all --enable=$(LINT_TESTS) $(LINT_SRCS)
+	$(PYLINT) --disable=all --enable=$(LINT_TESTS) $(LINT_SRCS)
 
 pyflakes:
 	pyflakes $(LINT_SRCS)
@@ -272,3 +242,7 @@ pytype:
 
 pytype1:
 	pytype --pythonpath=$(PWD) beancount/utils/net_utils.py
+
+bazel-link:
+	rm -f beancount/parser/_parser.so
+	ln -s ../../bazel-bin/beancount/parser/_parser.so beancount/parser/_parser.so

@@ -16,7 +16,7 @@ import warnings
 from beancount.ingest import importer
 from beancount.ingest import cache
 from beancount.utils import test_utils
-from beancount.utils import version
+from beancount.parser import version
 from beancount.ingest import identify
 from beancount.ingest import extract
 from beancount.ingest import file
@@ -24,6 +24,21 @@ from beancount.ingest import file
 
 DESCRIPTION = ("Identify, extract or file away data downloaded from "
                "financial institutions.")
+
+
+def identify_main():
+    """Main program for 'identify' function."""
+    return trampoline_to_ingest(identify)
+
+
+def extract_main():
+    """Main program for 'extract' function."""
+    return trampoline_to_ingest(extract)
+
+
+def file_main():
+    """Main program for 'file' function."""
+    return trampoline_to_ingest(file)
 
 
 def ingest(importers_list, detect_duplicates_func=None, hooks=None):

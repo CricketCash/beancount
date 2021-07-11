@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.4.  */
+/* A Bison parser, made by GNU Bison 3.6.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2019 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,9 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* Undocumented macros, especially those whose name start with YY_,
-   are private implementation details.  Do not rely on them.  */
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
 
 #ifndef YY_YY_BEANCOUNT_PARSER_GRAMMAR_H_INCLUDED
 # define YY_YY_BEANCOUNT_PARSER_GRAMMAR_H_INCLUDED
@@ -43,74 +44,119 @@
 #if YYDEBUG
 extern int yydebug;
 #endif
+/* "%code requires" blocks.  */
+#line 12 "beancount/parser/grammar.y"
 
-/* Token type.  */
+
+#include <stdio.h>
+#include <assert.h>
+#include "parser.h"
+
+/* Extend default location type with file name information. */
+typedef struct YYLTYPE {
+    int first_line;
+    int first_column;
+    int last_line;
+    int last_column;
+    PyObject* file_name;
+} YYLTYPE;
+
+#define YYLTYPE_IS_DECLARED 1
+
+/* Extend defult location action to copy file name over. */
+#define YYLLOC_DEFAULT(current, rhs, N)                                 \
+    do {                                                                \
+        if (N) {                                                        \
+            (current).first_line   = YYRHSLOC(rhs, 1).first_line;       \
+            (current).first_column = YYRHSLOC(rhs, 1).first_column;     \
+            (current).last_line    = YYRHSLOC(rhs, N).last_line;        \
+            (current).last_column  = YYRHSLOC(rhs, N).last_column;      \
+            (current).file_name    = YYRHSLOC(rhs, N).file_name;        \
+        } else {                                                        \
+            (current).first_line   = (current).last_line =              \
+                YYRHSLOC(rhs, 0).last_line;                             \
+            (current).first_column = (current).last_column =            \
+                YYRHSLOC(rhs, 0).last_column;                           \
+            (current).file_name    = YYRHSLOC(rhs, 0).file_name;        \
+        }                                                               \
+    } while (0)
+
+/* Get a printable version of a token name. */
+const char* token_to_string(int token);
+
+
+#line 89 "beancount/parser/grammar.h"
+
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    LEX_ERROR = 258,
-    INDENT = 259,
-    EOL = 260,
-    COMMENT = 261,
-    SKIPPED = 262,
-    PIPE = 263,
-    ATAT = 264,
-    AT = 265,
-    LCURLCURL = 266,
-    RCURLCURL = 267,
-    LCURL = 268,
-    RCURL = 269,
-    EQUAL = 270,
-    COMMA = 271,
-    TILDE = 272,
-    HASH = 273,
-    ASTERISK = 274,
-    SLASH = 275,
-    COLON = 276,
-    PLUS = 277,
-    MINUS = 278,
-    LPAREN = 279,
-    RPAREN = 280,
-    FLAG = 281,
-    TXN = 282,
-    BALANCE = 283,
-    OPEN = 284,
-    CLOSE = 285,
-    COMMODITY = 286,
-    PAD = 287,
-    EVENT = 288,
-    PRICE = 289,
-    NOTE = 290,
-    DOCUMENT = 291,
-    QUERY = 292,
-    CUSTOM = 293,
-    PUSHTAG = 294,
-    POPTAG = 295,
-    PUSHMETA = 296,
-    POPMETA = 297,
-    OPTION = 298,
-    INCLUDE = 299,
-    PLUGIN = 300,
-    NONE = 301,
-    BOOL = 302,
-    DATE = 303,
-    ACCOUNT = 304,
-    CURRENCY = 305,
-    STRING = 306,
-    NUMBER = 307,
-    TAG = 308,
-    LINK = 309,
-    KEY = 310,
-    NEGATIVE = 311
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    INDENT = 258,                  /* INDENT  */
+    EOL = 259,                     /* EOL  */
+    COMMENT = 260,                 /* COMMENT  */
+    SKIPPED = 261,                 /* SKIPPED  */
+    PIPE = 262,                    /* PIPE  */
+    ATAT = 263,                    /* ATAT  */
+    AT = 264,                      /* AT  */
+    LCURLCURL = 265,               /* LCURLCURL  */
+    RCURLCURL = 266,               /* RCURLCURL  */
+    LCURL = 267,                   /* LCURL  */
+    RCURL = 268,                   /* RCURL  */
+    COMMA = 269,                   /* COMMA  */
+    TILDE = 270,                   /* TILDE  */
+    HASH = 271,                    /* HASH  */
+    ASTERISK = 272,                /* ASTERISK  */
+    SLASH = 273,                   /* SLASH  */
+    COLON = 274,                   /* COLON  */
+    PLUS = 275,                    /* PLUS  */
+    MINUS = 276,                   /* MINUS  */
+    LPAREN = 277,                  /* LPAREN  */
+    RPAREN = 278,                  /* RPAREN  */
+    FLAG = 279,                    /* FLAG  */
+    TXN = 280,                     /* TXN  */
+    BALANCE = 281,                 /* BALANCE  */
+    OPEN = 282,                    /* OPEN  */
+    CLOSE = 283,                   /* CLOSE  */
+    COMMODITY = 284,               /* COMMODITY  */
+    PAD = 285,                     /* PAD  */
+    EVENT = 286,                   /* EVENT  */
+    PRICE = 287,                   /* PRICE  */
+    NOTE = 288,                    /* NOTE  */
+    DOCUMENT = 289,                /* DOCUMENT  */
+    QUERY = 290,                   /* QUERY  */
+    CUSTOM = 291,                  /* CUSTOM  */
+    PUSHTAG = 292,                 /* PUSHTAG  */
+    POPTAG = 293,                  /* POPTAG  */
+    PUSHMETA = 294,                /* PUSHMETA  */
+    POPMETA = 295,                 /* POPMETA  */
+    OPTION = 296,                  /* OPTION  */
+    INCLUDE = 297,                 /* INCLUDE  */
+    PLUGIN = 298,                  /* PLUGIN  */
+    NONE = 299,                    /* NONE  */
+    BOOL = 300,                    /* BOOL  */
+    DATE = 301,                    /* DATE  */
+    ACCOUNT = 302,                 /* ACCOUNT  */
+    CURRENCY = 303,                /* CURRENCY  */
+    STRING = 304,                  /* STRING  */
+    NUMBER = 305,                  /* NUMBER  */
+    TAG = 306,                     /* TAG  */
+    LINK = 307,                    /* LINK  */
+    KEY = 308,                     /* KEY  */
+    NEGATIVE = 309                 /* NEGATIVE  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 126 "beancount/parser/grammar.y"
+#line 146 "beancount/parser/grammar.y"
 
     char character;
     const char* string;
@@ -120,7 +166,7 @@ union YYSTYPE
         PyObject* pyobj2;
     } pairobj;
 
-#line 124 "beancount/parser/grammar.h"
+#line 170 "beancount/parser/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -144,6 +190,6 @@ struct YYLTYPE
 
 
 
-int yyparse (void);
+int yyparse (yyscan_t scanner, PyObject* builder);
 
 #endif /* !YY_YY_BEANCOUNT_PARSER_GRAMMAR_H_INCLUDED  */

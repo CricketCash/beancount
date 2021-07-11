@@ -18,7 +18,7 @@ from os import path
 # under the assumption that not all third-party dependencies are installed.
 # Import what you need as late as possible.
 from beancount.utils import misc_utils
-from beancount.utils import version
+from beancount.parser import version
 from beancount.core import display_context
 
 
@@ -202,7 +202,7 @@ def do_context(filename, args):
         to be a string which contains either a lineno integer or a filename:lineno
         combination (which can be used if the location is not in the top-level file).
     """
-    from beancount.reports import context
+    from beancount.parser import context
     from beancount import loader
 
     # Check we have the required number of arguments.
@@ -375,7 +375,7 @@ def do_validate_html(directory, args):
       directory: A string, the root directory whose contents to validate.
       args: A tuple of the rest of arguments.
     """
-    from beancount.web import scrape
+    from beancount.utils import scrape
     files, missing, empty = scrape.validate_local_links_in_dir(directory)
     logging.info('%d files processed', len(files))
     for target in missing:

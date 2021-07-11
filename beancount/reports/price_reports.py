@@ -7,7 +7,7 @@ import datetime
 import re
 
 from beancount.reports import base
-from beancount.reports import table
+from beancount.utils import table
 from beancount.reports import gviz
 from beancount.parser import printer
 from beancount.core import data
@@ -160,15 +160,15 @@ class PriceDBReport(base.Report):
             file.write('\n')
 
 
-# Note: This should use the same routines as in beancount.prices.find_prices.
+# Note: This should use the same routines as in beancount.ops.find_prices.
 class TickerReport(base.TableReport):
     """Print a parseable mapping of (base, quote, ticker, name) for all commodities."""
 
     names = ['tickers', 'symbols']
 
     def generate_table(self, entries, errors, options_map):
-        commodity_map = getters.get_commodity_map(entries)
-        ticker_info = getters.get_values_meta(commodity_map, 'name', 'ticker', 'quote')
+        commodities = getters.get_commodity_directives(entries)
+        ticker_info = getters.get_values_meta(commodities, 'name', 'ticker', 'quote')
 
         price_rows = [
             (currency, cost_currency, ticker, name)

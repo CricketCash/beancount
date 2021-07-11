@@ -22,7 +22,6 @@ from beancount.core import amount
 from beancount.core import prices
 from beancount.ops import holdings
 from beancount.reports import base
-from beancount.reports import holdings_reports
 
 
 # The name of the metadata field used by this report.
@@ -136,8 +135,8 @@ def export_holdings(entries, options_map, promiscuous, aggregate_by_commodity=Fa
           not convert them to a money vehicle matching the holding's cost-currency.
     """
     # Get the desired list of holdings.
-    holdings_list, price_map = holdings_reports.get_assets_holdings(entries, options_map)
-    commodities_map = getters.get_commodity_map(entries)
+    holdings_list, price_map = holdings.get_assets_holdings(entries, options_map)
+    commodities = getters.get_commodity_directives(entries)
     dcontext = options_map['dcontext']
 
     # Aggregate the holdings, if requested. Google Finance is notoriously
@@ -147,7 +146,7 @@ def export_holdings(entries, options_map, promiscuous, aggregate_by_commodity=Fa
                                                        lambda holding: holding.currency)
 
     # Classify all the holdings for export.
-    action_holdings = classify_holdings_for_export(holdings_list, commodities_map)
+    action_holdings = classify_holdings_for_export(holdings_list, commodities)
 
     # The lists of exported and converted export entries, and the list of
     # ignored holdings.
@@ -191,7 +190,7 @@ def export_holdings(entries, options_map, promiscuous, aggregate_by_commodity=Fa
             holdings_ignored.append(holding)
 
     # Get the money instruments.
-    money_instruments = get_money_instruments(commodities_map)
+    money_instruments = get_money_instruments(commodities)
 
     # Convert all the cash values to money instruments, if possible. If not
     # possible, we'll just have to ignore those values.

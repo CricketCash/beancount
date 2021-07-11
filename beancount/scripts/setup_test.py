@@ -3,17 +3,22 @@
 __copyright__ = "Copyright (C) 2014-2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
-import os
-import shutil
-import sys
-import tempfile
-import subprocess
-import tarfile
-import re
 from os import path
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
 import unittest
 
 from beancount.utils import test_utils
+
+
+def is_bazel_build():
+    "Return true if this is invoked from Bazel."
+    return "RUNFILES_DIR" in os.environ
 
 
 class TestSetup(test_utils.TestCase):
@@ -25,6 +30,7 @@ class TestSetup(test_utils.TestCase):
         if path.exists(self.installdir):
             shutil.rmtree(self.installdir)
 
+    @unittest.skipIf(is_bazel_build(), "Cannot setup within Bazel.")
     def test_setup(self):
         # We need to create the installation target directory and have our
         # PYTHONPATH set on it in order for setuptools to work properly in a
@@ -116,16 +122,6 @@ class TestSetup(test_utils.TestCase):
         stdout, stderr = pipe.communicate()
         self.assertEqual(0, pipe.returncode, stderr)
 
-        # Run bean-report.
-        command = [path.join(bindir, 'bean-report'), example_filename, 'balsheet']
-        pipe = subprocess.Popen(command, shell=False,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                env={'PYTHONPATH': path.join(libdir)},
-                                cwd=rootdir)
-        stdout, stderr = pipe.communicate()
-        self.assertEqual(0, pipe.returncode, stderr)
-
         # Run bean-query.
         command = [path.join(bindir, 'bean-query'), example_filename, 'balances;']
         pipe = subprocess.Popen(command, shell=False,
@@ -136,6 +132,7 @@ class TestSetup(test_utils.TestCase):
         stdout, stderr = pipe.communicate()
         self.assertEqual(0, pipe.returncode, stderr)
 
+    @unittest.skipIf(is_bazel_build(), "Cannot setup within Bazel.")
     def test_sdist_includes_c_files(self):
         # Clean previously built "build" output.
         rootdir = test_utils.find_repository_root(__file__)

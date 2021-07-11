@@ -99,8 +99,8 @@ from beancount.core import inventory
 from beancount.core import account
 from beancount.core import data
 from beancount import loader
-from beancount.reports import table
-from beancount.utils import version
+from beancount.utils import table
+from beancount.parser import version
 
 
 # The name of the metadata field used to link matched postings.
@@ -188,7 +188,7 @@ def reduce_inventory(pending_lots, posting, eindex):
         else:
             errors.append(
                 BookConversionError(posting.meta,
-                          "Could not match position {}".format(posting), None))
+                                    "Could not match position {}".format(posting), None))
             break
 
         # Reduce the pending lots.

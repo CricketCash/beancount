@@ -37,9 +37,8 @@ def get_cflags():
         return None
 
 # Read the version.
-version_module = runpy.run_path(path.join(path.dirname(__file__),
-                                          'beancount/__init__.py'))
-version = version_module['__version__']
+with open("beancount/VERSION") as version_file:
+    version = version_file.read().strip()
 assert isinstance(version, str)
 
 def get_hg_changeset():
@@ -96,20 +95,16 @@ setup(name="beancount",
       automate the conversion of external data into one's input file in
       Beancount syntax.
       """,
-      
+
       license="GNU GPLv2 only",
       author="Martin Blais",
       author_email="blais@furius.ca",
-      url="http://furius.ca/beancount",
+      url="https://github.com/beancount/beancount",
       download_url="https://github.com/beancount/beancount",
-      packages=find_packages(exclude=['experiments*', ]),
+      packages=find_packages(exclude=['experiments*']),
 
       package_data = {
-          'beancount.web': ['*.ico',
-                            '*.html',
-                            '*.css',
-                            'third_party/*.js'],
-          'beancount.reports': ['*.html'],
+          'beancount': ['VERSION'],
           'beancount.utils.file_type_testdata': ['*'],
       },
 
@@ -121,7 +116,7 @@ setup(name="beancount",
                         "beancount/parser/parser.c",
                     ],
                     define_macros=[
-                        ('RELEASE_VERSION', version),
+                        ('BEANCOUNT_VERSION', version),
                         ('VC_CHANGESET', vc_changeset),
                         ('VC_TIMESTAMP', int(float(vc_timestamp))),
                         ('PARSER_SOURCE_HASH', hash_parser_source_files())],
@@ -154,22 +149,11 @@ setup(name="beancount",
           # The SQL parser uses PLY in order to parse the input syntax.
           'ply',
 
-          # The bean-web web application is built on top of this web
-          # framework.
-          'bottle',
-
-          # This XML parsing library is mainly required to web scrape the
-          # bean-web pages for testing.
-          'lxml',
-
           # This library is needed to identify the type of a file for import.
           'python-magic',
 
           # This library is needed to parse XML files (for the OFX examples).
           'beautifulsoup4',
-
-          # This library is needed to make requests for price sources.
-          'requests',
 
           # This library is needed to identify the character set of a file for
           # import, in order to read its contents and match expressions
@@ -184,19 +168,15 @@ setup(name="beancount",
 
       entry_points = {
           'console_scripts': [
-              'bean-bake = beancount.scripts.bake:main',
               'bean-check = beancount.scripts.check:main',
               'bean-doctor = beancount.scripts.doctor:main',
               'bean-example = beancount.scripts.example:main',
               'bean-format = beancount.scripts.format:main',
-              'bean-price = beancount.prices.price:main',
               'bean-query = beancount.query.shell:main',
-              'bean-report = beancount.reports.report:main',
               'bean-sql = beancount.scripts.sql:main',
-              'bean-web = beancount.web.web:main',
-              'bean-identify = beancount.ingest.identify:main',
-              'bean-extract = beancount.ingest.extract:main',
-              'bean-file = beancount.ingest.file:main',
+              'bean-identify = beancount.ingest.scripts_utils:identify_main',
+              'bean-extract = beancount.ingest.scripts_utils:extract_main',
+              'bean-file = beancount.ingest.scripts_utils:file_main',
               'treeify = beancount.tools.treeify:main',
               'upload-to-sheets = beancount.tools.sheets_upload:main',
           ]
@@ -209,7 +189,7 @@ setup(name="beancount",
 # Development setup requires two tools IFF you need to change the grammar:
 #
 # - flex-2.6.4
-# - bison-3.0.5
+# - bison-3.6.4
 #
 # These versions are related to what's on a recent Ubuntu. If you don't change
 # the grammar nor the tokenizer, the C sources are checked in so you won't need
